@@ -16,6 +16,14 @@ class LoanCreate(BaseModel):
     is_returned: bool = False
 
 
+class LoanUpdate(BaseModel):
+    borrower: str
+    item: str
+    amount: int
+    loan_date: str
+    is_returned: bool
+
+
 loans = []
 next_id = 1
 
@@ -49,3 +57,28 @@ def create_loan(loan: LoanCreate):
     next_id += 1
 
     return {"message": "新增借款紀錄成功", "data": new_loan}
+
+
+@app.put("/loans/{loan_id}")
+def update_loan(loan_id: int, updated_loan: LoanUpdate):
+
+    for index, loan in enumerate(loans):
+
+        if loan["id"] == loan_id:
+
+            loans[index] = {"id": loan_id, **updated_loan.model_dump()}
+
+            return {"message": "修改借款紀錄成功", "data": loans[index]}
+
+    raise HTTPException(status_code=404, detail="找不到這筆借款紀錄")
+
+
+@app.delete("/loans/{loan_id}")
+def delete_loan(loan_id: int):
+    for index, loan in enumerate(loans):
+        if loan["id"] == loan_id:
+            deleted_loan = loans.pop(index)
+
+            return {"message": "刪除借款紀錄成功", "data": deleted_loan}
+
+    raise HTTPException(status_code=404, detail="找不到這筆借款紀錄")
